@@ -1,6 +1,6 @@
 import mongoose, { Schema, models } from "mongoose";
 
-const transactionSchma = new Schema({
+const transactionSchema = new Schema({
   createdAt: {
     type: Date,
     default: Date.now(),
@@ -23,6 +23,6 @@ const transactionSchma = new Schema({
 });
 
 const Transaction =
-  models?.Transaction || mongoose.model("Transaction", transactionSchma);
+  models?.Transaction || mongoose.model("Transaction", transactionSchema);
 
 export default Transaction;
