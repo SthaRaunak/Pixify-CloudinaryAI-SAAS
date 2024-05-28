@@ -1,6 +1,8 @@
-import { WebhookEvent, clerkClient } from "@clerk/nextjs/server";
+import { clerkClient } from "@clerk/nextjs/server";
+import { type WebhookEvent } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
+//svix to verify webhook signature
 import { Webhook } from "svix";
 
 //actions
@@ -55,9 +57,9 @@ export async function POST(req: Request) {
 
   const { id } = evt.data;
   const eventType = evt.type;
-
+  console.log(`Webhook with an ID of ${id}  and type of ${eventType}`);
+  console.log("Webhook body:", body);
   // CREATE
-  /* eslint-disable no-unused-vars */
 
   if (eventType === "user.created") {
     const { id, email_addresses, image_url, first_name, last_name, username } =
@@ -70,7 +72,7 @@ export async function POST(req: Request) {
       firstName: first_name,
       lastName: last_name,
       photo: image_url,
-    };
+    } as CreateUserParams;
 
     const newUser = await createUser(user);
 
@@ -90,15 +92,14 @@ export async function POST(req: Request) {
   }
 
   if (eventType === "user.updated") {
-    const { id, email_addresses, image_url, first_name, last_name, username } =
-      evt.data;
+    const { id, image_url, first_name, last_name, username } = evt.data;
 
     const user = {
       firstName: first_name,
       lastName: last_name,
       username: username,
       photo: image_url,
-    };
+    } as UpdateUserParams;
 
     const updatedUser = await updateUser(id, user);
 
@@ -107,14 +108,14 @@ export async function POST(req: Request) {
 
   if (eventType === "user.deleted") {
     const { id } = evt.data;
-
+    if (!id) {
+      return new Response("User Deletion Error: Id not provided", {
+        status: 400,
+      });
+    }
     const deletedUser = await deleteUser(id);
-
     return NextResponse.json({ message: "OK", user: deletedUser });
   }
-
-  console.log(`Webhook with an ID of ${id}  and type of ${eventType}`);
-  console.log("Webhook body:", body);
 
   return new Response("", { status: 200 });
 }
