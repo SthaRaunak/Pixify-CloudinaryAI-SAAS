@@ -119,6 +119,7 @@
   .h2-bold {
     @apply text-[30px] font-bold md:text-[36px] leading-[110%];
   }
+
   /* 30 */
   .h3-bold {
     @apply font-bold text-[30px] leading-[140%];
