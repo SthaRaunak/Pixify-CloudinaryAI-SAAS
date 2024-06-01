@@ -20,7 +20,7 @@ export async function createUser(user: CreateUserParams) {
 export async function getUserById(clerkId: string) {
   try {
     await connectDB();
-    const user = User.findOne({ clerkId });
+    const user = await User.findOne({ clerkId });
 
     if (!user) {
       throw new Error("User not found!");
@@ -31,7 +31,6 @@ export async function getUserById(clerkId: string) {
     handleError(error);
   }
 }
-
 // UPDATE
 export async function updateUser(clerkId: string, user: UpdateUserParams) {
   try {

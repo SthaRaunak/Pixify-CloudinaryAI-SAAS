@@ -1,7 +1,5 @@
 import { clerkClient } from "@clerk/nextjs/server";
-import { type WebhookEvent } from "@clerk/nextjs/server";
-import { headers } from "next/headers";
-import { NextResponse } from "next/server";
+import { type WebhookEvent } from "@clerk/nextjs/server"; import { headers } from "next/headers"; import { NextResponse } from "next/server";
 //svix to verify webhook signature
 import { Webhook } from "svix";
 
