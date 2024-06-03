@@ -1,5 +1,5 @@
 import React from "react";
-import { Control } from "react-hook-form";
+import { type Control } from "react-hook-form";
 import { z } from "zod";
 
 import {

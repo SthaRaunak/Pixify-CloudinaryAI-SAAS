@@ -33,8 +33,7 @@ async function AddTransformationTypePage({
           action="Add"
           userId={user._id}
           type={transformation.type as TransformationTypeKey}
-          creditBalance={user?.creditBalance}
-          data={null}
+          creditBalance={user.creditBalance}
         />
       </section>
     </>

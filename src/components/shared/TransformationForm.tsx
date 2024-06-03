@@ -2,7 +2,7 @@
 
 // ---- Imports ----
 
-import React, { useState } from "react";
+import React, { useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -15,15 +15,7 @@ import {
 // UI
 
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { CustomField } from "@/components/shared/CustomField";
 import {
@@ -36,6 +28,7 @@ import {
 
 //type
 import { type IImage } from "@/lib/database/models/image.model";
+import { Debounce, deepMergeObjects } from "@/lib/utils";
 
 // ---- Imports ----
 
@@ -64,12 +57,21 @@ function TransformationForm({
   data = null,
   action,
   type,
+  creditBalance,
+  userId,
+  config = null,
 }: TransformationFormProps) {
+  //getting the detail transformation type
   const transformationType = transformationTypes[type];
+
   const [image, setImage] = useState(data);
+
   const [newTransformation, setNewTransformation] =
     useState<Transformations | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isTransforming, setIsTransforming] = useState(false);
+  const [transformationConfig, setTransformationConfig] = useState(config);
+  const [isPending, startTransition] = useTransition();
 
   const intialValues: FormType =
     data && action === "Update"
@@ -97,14 +99,51 @@ function TransformationForm({
   const onSelectFieldHandler = (
     value: string,
     onChangeField: (value: string) => void
-  ) => {};
+  ) => {
+    const imageSize = aspectRatioOptions[value as AspectRatioKey];
+
+    setImage((prevState: any) => ({
+      ...prevState,
+      aspectRatio: imageSize.aspectRatio,
+      width: imageSize.width,
+      height: imageSize.height,
+    }));
+    setNewTransformation(transformationType.config);
+    return onChangeField(value);
+  };
 
   const onInputChangeHandler = (
     fieldName: string,
     value: string,
     type: string,
     onChangeField: (value: string) => void
-  ) => {};
+  ) => {
+    Debounce(() => {
+      setNewTransformation((prevState: any) => ({
+        ...prevState,
+        [type]: {
+          ...prevState?.[type],
+          [fieldName === "prompt" ? "prompt" : "to"]: value,
+        },
+      }));
+
+      return onChangeField(value);
+    }, 1000);
+  };
+
+  // Todo: Implement credit
+  const onTransformHandler = () => {
+    setIsTransforming(true);
+
+    setTransformationConfig(
+      deepMergeObjects(newTransformation, transformationConfig)
+    );
+
+    setNewTransformation(null);
+    startTransition(async () => {
+      //await updateCredits(userId,creditFee);
+    });
+  };
 
   return (
     <Form {...form}>
@@ -116,8 +155,6 @@ function TransformationForm({
           className="w-full"
           render={({ field }) => <Input {...field} className="input-field" />}
         />
-
-        <Button type="submit">Submit</Button>
         {type === "fill" && (
           <CustomField
             control={form.control}
@@ -130,8 +167,8 @@ function TransformationForm({
                   onSelectFieldHandler(value, field.onChange);
                 }}
               >
-                <SelectTrigger className="select-fiedl">
-                  <SelectValue placeholder="Select size" />{" "}
+                <SelectTrigger className="select-field">
+                  <SelectValue placeholder="Select size" />
                 </SelectTrigger>
                 <SelectContent>
                   {Object.keys(aspectRatioOptions).map((key) => (
@@ -193,9 +230,15 @@ function TransformationForm({
             )}
           </div>
         )}
+
         <div className="flex flex-col gap-4">
-          <Button type="button" className="submit-button capitalize">
-            Transform
+          <Button
+            type="button"
+            className="submit-button capitalize"
+            disabled={isTransforming || newTransformation === null}
+            onClick={onTransformHandler}
+          >
+            Apply Transformation
           </Button>
           <Button
             type="submit"

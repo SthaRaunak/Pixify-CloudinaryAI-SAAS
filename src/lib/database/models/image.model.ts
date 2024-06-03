@@ -30,7 +30,7 @@ const ImageSchema = new Schema<IImage>({
   height: Number,
   config: Object,
   transformationUrl: URL,
-  aspectRation: String,
+  aspectRatio: String,
   color: String,
   prompt: String,
   author: {
